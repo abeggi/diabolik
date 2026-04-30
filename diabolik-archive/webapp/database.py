@@ -261,3 +261,53 @@ def count_albi():
     total = conn.execute("SELECT COUNT(*) FROM albi").fetchone()[0]
     conn.close()
     return total
+
+
+def get_distinct_autori(q=None):
+    conn = get_conn()
+    fields = ['soggetto', 'sceneggiatura', 'matita', 'copertinista']
+    union_parts = [
+        f"SELECT {f} AS nome FROM albi WHERE {f} IS NOT NULL AND {f} != ''"
+        for f in fields
+    ]
+    union_sql = " UNION ".join(union_parts)
+    if q:
+        rows = conn.execute(
+            f"SELECT DISTINCT nome FROM ({union_sql}) WHERE nome LIKE ? ORDER BY nome LIMIT 20",
+            (f"%{q}%",),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            f"SELECT DISTINCT nome FROM ({union_sql}) ORDER BY nome LIMIT 50"
+        ).fetchall()
+    conn.close()
+    return [r["nome"] for r in rows]
+
+
+def get_adjacent_albi(slug):
+    conn = get_conn()
+    current = conn.execute(
+        "SELECT anno_numerico, numero_inedito FROM albi WHERE slug = ?", (slug,)
+    ).fetchone()
+    if not current:
+        conn.close()
+        return None
+    anno = current["anno_numerico"]
+    numero = current["numero_inedito"]
+    prev_row = conn.execute(
+        """SELECT slug, titolo, numero_inedito FROM albi
+           WHERE anno_numerico < ? OR (anno_numerico = ? AND numero_inedito < ?)
+           ORDER BY anno_numerico DESC, numero_inedito DESC LIMIT 1""",
+        (anno, anno, numero),
+    ).fetchone()
+    next_row = conn.execute(
+        """SELECT slug, titolo, numero_inedito FROM albi
+           WHERE anno_numerico > ? OR (anno_numerico = ? AND numero_inedito > ?)
+           ORDER BY anno_numerico ASC, numero_inedito ASC LIMIT 1""",
+        (anno, anno, numero),
+    ).fetchone()
+    conn.close()
+    return {
+        "prev": {"slug": prev_row["slug"], "titolo": prev_row["titolo"], "numero": prev_row["numero_inedito"]} if prev_row else None,
+        "next": {"slug": next_row["slug"], "titolo": next_row["titolo"], "numero": next_row["numero_inedito"]} if next_row else None,
+    }

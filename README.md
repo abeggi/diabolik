@@ -75,7 +75,7 @@ Funzionalità:
 - Preferiti ★, note personali, tag con autocompletamento
 - Ordinamento crescente/decrescente
 - Tema chiaro/scuro
-- Impostazioni: statistiche, refresh albi, backup DB
+- Impostazioni: statistiche, refresh albi
 
 ## Servizio systemd
 

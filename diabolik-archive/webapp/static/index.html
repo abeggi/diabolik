@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diabolik Archive</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -15,14 +16,17 @@
 <div class="container">
     <div class="search-bar">
         <input type="text" id="q" placeholder="Cerca per titolo...">
-        <button class="filters-toggle" onclick="toggleFilters()">🔽 Filtri</button>
+        <button class="filters-toggle" id="filters-toggle-btn" onclick="toggleFilters()">🔽 Filtri</button>
     </div>
 
     <div class="filters-panel hidden" id="filters-panel">
         <select id="filter-anno">
             <option value="">Tutti gli anni</option>
         </select>
-        <input type="text" id="filter-autore" placeholder="Autore (soggetto, disegni...)">
+        <div class="filter-autore-wrap">
+            <input type="text" id="filter-autore" placeholder="Autore (soggetto, disegni...)" autocomplete="off">
+            <div class="tag-suggestions" id="autore-suggestions"></div>
+        </div>
         <select id="filter-tag">
             <option value="">Tutti i tag</option>
         </select>
@@ -51,6 +55,22 @@
         document.getElementById('filters-panel').classList.toggle('hidden');
     }
 
+    function countActiveFilters() {
+        let count = 0;
+        if (document.getElementById('filter-anno').value) count++;
+        if (document.getElementById('filter-autore').value.trim()) count++;
+        if (document.getElementById('filter-tag').value) count++;
+        if (document.getElementById('filter-preferito').checked) count++;
+        return count;
+    }
+
+    function updateFiltersToggle() {
+        const btn = document.getElementById('filters-toggle-btn');
+        const count = countActiveFilters();
+        btn.textContent = count > 0 ? `🔽 Filtri (${count})` : '🔽 Filtri';
+        btn.style.color = count > 0 ? 'var(--accent)' : '';
+    }
+
     function resetFilters() {
         document.getElementById('q').value = '';
         document.getElementById('filter-anno').value = '';
@@ -58,8 +78,10 @@
         document.getElementById('filter-tag').value = '';
         document.getElementById('filter-preferito').checked = false;
         document.getElementById('filters-panel').classList.add('hidden');
+        document.getElementById('autore-suggestions').classList.remove('active');
         sessionStorage.removeItem('search-query');
         currentPage = 1;
+        updateFiltersToggle();
         loadResults();
     }
 
@@ -84,7 +106,25 @@
         return params.toString();
     }
 
+    function showSkeletons() {
+        const grid = document.getElementById('grid');
+        const count = Math.min(Math.max(totalResults || 12, 6), 24);
+        let html = '';
+        for (let i = 0; i < count; i++) {
+            html += `
+                <div class="card-skeleton">
+                    <div class="cover-skeleton skeleton"></div>
+                    <div class="info-skeleton">
+                        <div class="${i % 3 === 2 ? 'title-skeleton-short' : 'title-skeleton'} skeleton"></div>
+                        <div class="meta-skeleton skeleton"></div>
+                    </div>
+                </div>`;
+        }
+        grid.innerHTML = html;
+    }
+
     async function loadResults() {
+        showSkeletons();
         const qs = buildQuery();
         const data = await api('/api/albi?' + qs);
         totalResults = data.total;
@@ -96,7 +136,7 @@
         grid.innerHTML = '';
 
         if (data.results.length === 0) {
-            grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-secondary);padding:40px;">Nessun albo trovato</p>';
+            grid.innerHTML = '<p class="grid-empty">Nessun albo trovato</p>';
         }
 
         for (const a of data.results) {
@@ -115,19 +155,20 @@
 
             card.innerHTML = `
                 ${coverSrc
-                    ? `<img class="cover" src="${coverSrc}" alt="${a.titolo}" onerror="imgFallback(this,'${(a.titolo || '').replace(/'/g, "\\'")}')">`
-                    : `<div class="cover">${a.titolo || ''}</div>`}
+                    ? `<img class="cover" src="${escapeHtml(coverSrc)}" alt="${escapeHtml(a.titolo)}" data-titolo="${escapeHtml(a.titolo)}" onerror="imgFallback(this)">`
+                    : `<div class="cover">${escapeHtml(a.titolo)}</div>`}
                 <div class="info">
                     <div class="titolo">
-                        <span class="titolo-text">${a.titolo || '---'}</span>
+                        <span class="titolo-text">${escapeHtml(a.titolo) || '---'}</span>
                         ${badgesHtml ? `<span class="badges">${badgesHtml}</span>` : ''}
                     </div>
-                    <div class="meta">${a.anno || '?'} · #${a.numero_inedito || '?'}</div>
+                    <div class="meta">${escapeHtml(String(a.anno || '?'))} · #${escapeHtml(String(a.numero_inedito || '?'))}</div>
                 </div>
             `;
             grid.appendChild(card);
         }
 
+        updateFiltersToggle();
         renderPagination();
     }
 
@@ -229,9 +270,54 @@
     document.getElementById('filter-preferito').addEventListener('change', debouncedSearch);
     document.getElementById('filter-tag').addEventListener('change', debouncedSearch);
 
+    // Autore autocomplete
+    function initAutoreAutocomplete() {
+        const input = document.getElementById('filter-autore');
+        const suggestions = document.getElementById('autore-suggestions');
+
+        const fetchSuggestions = debounce(async function() {
+            const val = input.value.trim();
+            if (!val) {
+                suggestions.classList.remove('active');
+                return;
+            }
+            try {
+                const results = await api('/api/albi/filters/autori?q=' + encodeURIComponent(val));
+                if (!results.length) {
+                    suggestions.classList.remove('active');
+                    return;
+                }
+                suggestions.innerHTML = results.map(r =>
+                    `<div class="tag-suggestion-item" data-val="${escapeHtml(r)}">${escapeHtml(r)}</div>`
+                ).join('');
+                suggestions.classList.add('active');
+
+                suggestions.querySelectorAll('.tag-suggestion-item').forEach(item => {
+                    item.onclick = function() {
+                        input.value = this.dataset.val;
+                        suggestions.classList.remove('active');
+                        currentPage = 1;
+                        loadResults();
+                    };
+                });
+            } catch (e) {
+                suggestions.classList.remove('active');
+            }
+        }, 250);
+
+        input.addEventListener('input', fetchSuggestions);
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.filter-autore-wrap')) {
+                suggestions.classList.remove('active');
+            }
+        });
+    }
+
     async function init() {
         await Promise.all([loadYears(), loadTags()]);
         restoreSearch();
+        initAutoreAutocomplete();
         loadResults();
     }
 

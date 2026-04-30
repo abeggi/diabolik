@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Query, HTTPException
 
 try:
-    from ..database import search_albi, get_albo_detail, get_distinct_years
+    from ..database import search_albi, get_albo_detail, get_distinct_years, get_distinct_autori, get_adjacent_albi
 except ImportError:
-    from database import search_albi, get_albo_detail, get_distinct_years
+    from database import search_albi, get_albo_detail, get_distinct_years, get_distinct_autori, get_adjacent_albi
 
 router = APIRouter(prefix="/api/albi", tags=["albi"])
 
@@ -52,3 +52,18 @@ def api_albo_detail(slug: str):
 def api_years():
     """Lista anni distinti per il filtro select."""
     return get_distinct_years()
+
+
+@router.get("/filters/autori")
+def api_autori(q: str = Query(None)):
+    """Lista autori distinti per l'autocomplete."""
+    return get_distinct_autori(q)
+
+
+@router.get("/{slug}/adjacent")
+def api_adjacent(slug: str):
+    """Albi adiacenti cronologicamente."""
+    data = get_adjacent_albi(slug)
+    if data is None:
+        raise HTTPException(status_code=404, detail="Albo non trovato")
+    return data

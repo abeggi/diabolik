@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Impostazioni - Diabolik Archive</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -13,7 +14,7 @@
 </script>
 
 <div class="container">
-    <h1 style="margin-bottom:20px;">Impostazioni</h1>
+    <h1 class="settings-title">Impostazioni</h1>
 
     <div class="settings-card">
         <h2>Statistiche archivio</h2>
@@ -24,7 +25,7 @@
 
     <div class="settings-card">
         <h2>Aggiornamento archivio</h2>
-        <p style="margin-bottom:12px;font-size:14px;color:var(--text-secondary);">
+        <p class="settings-section-desc">
             Avvia lo scraper per cercare nuovi albi su diabolik.it.
             Il processo continua in background.
         </p>
@@ -34,7 +35,7 @@
 
     <div class="settings-card">
         <h2>Ordinamento</h2>
-        <p style="margin-bottom:12px;font-size:14px;color:var(--text-secondary);">
+        <p class="settings-section-desc">
             Ordine di visualizzazione degli albi nella griglia.
         </p>
         <div class="order-toggle">
@@ -47,13 +48,6 @@
         </div>
     </div>
 
-    <div class="settings-card">
-        <h2>Backup</h2>
-        <p style="margin-bottom:12px;font-size:14px;color:var(--text-secondary);">
-            Scarica una copia del database SQLite.
-        </p>
-        <button class="btn" onclick="downloadBackup()">Scarica backup DB</button>
-    </div>
 </div>
 
 <script>
@@ -75,13 +69,15 @@
                 <div class="stat-label">Dimensione DB</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" style="font-size:18px;">${stats.ultimo_scrape || '---'}</div>
+                <div class="stat-value stat-value-sm">${stats.ultimo_scrape || '---'}</div>
                 <div class="stat-label">Ultimo aggiornamento</div>
             </div>
         `;
     }
 
     async function startRefresh() {
+        if (!confirm('Avviare lo scraper? Il processo cercherà nuovi albi su diabolik.it e potrebbe richiedere alcuni minuti.')) return;
+
         const btn = document.getElementById('btn-refresh');
         btn.disabled = true;
         btn.textContent = 'Avvio in corso...';
@@ -130,11 +126,7 @@
         }, 5000);
     }
 
-    function downloadBackup() {
-        window.location.href = '/api/settings/backup';
-    }
-
-    function initOrderToggle() {
+function initOrderToggle() {
         const order = localStorage.getItem('diabolik-order') || 'desc';
         document.getElementById('toggle-order').checked = (order === 'desc');
     }

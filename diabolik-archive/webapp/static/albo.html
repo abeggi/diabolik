@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Albo - Diabolik Archive</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -14,6 +15,7 @@
 
 <div class="container">
     <a href="/" class="back-link" id="back-link">← Torna ai risultati</a>
+    <div class="albo-nav" id="albo-nav"></div>
 
     <div class="detail-layout" id="detail">
         <p>Caricamento...</p>
@@ -34,8 +36,15 @@
             document.title = data.titolo + ' - Diabolik Archive';
         } catch (e) {
             document.getElementById('detail').innerHTML =
-                '<p style="color:var(--accent)">Errore: ' + e.message + '</p>';
+                '<p class="error-text">Errore: ' + escapeHtml(e.message) + '</p>';
         }
+    }
+
+    function buildTagsHtml(tags) {
+        if (!tags.length) return '<span class="text-secondary-sm">Nessun tag</span>';
+        return tags.map(t =>
+            `<span class="tag-badge">${escapeHtml(t)} <span class="remove-tag" data-tag="${escapeHtml(t)}">×</span></span>`
+        ).join('');
     }
 
     function renderAlbo(data) {
@@ -57,32 +66,26 @@
 
         let metaHtml = '<table class="metadata-table">';
         for (const [label, value] of metadataFields) {
-            metaHtml += `<tr><td class="label">${label}</td><td>${value}</td></tr>`;
+            metaHtml += `<tr><td class="label">${escapeHtml(label)}</td><td>${escapeHtml(String(value))}</td></tr>`;
         }
         metaHtml += '</table>';
 
         let sinossiHtml = '';
         if (data.sinossi) {
-            sinossiHtml = `<div class="sinossi"><strong>Sinossi</strong><br>${data.sinossi}</div>`;
+            sinossiHtml = `<div class="sinossi"><strong>Sinossi</strong><br>${escapeHtml(data.sinossi)}</div>`;
         }
-
-        const tagsHtml = data.tags.map(t =>
-            `<span class="tag-badge">${t} <span class="remove-tag" onclick="removeTag('${t.replace(/'/g, "\\'")}')">×</span></span>`
-        ).join('');
-
-        const allTags = JSON.parse(sessionStorage.getItem('all-tags') || '[]');
 
         document.getElementById('detail').innerHTML = `
             <div class="detail-cover">
                 ${coverSrc
-                    ? `<img src="${coverSrc}" alt="${data.titolo}" onerror="imgFallback(this,'${(data.titolo || '').replace(/'/g, "\\'")}')">`
-                    : `<div class="cover" style="aspect-ratio:2/3;font-size:16px;">${data.titolo || ''}</div>`}
+                    ? `<img src="${escapeHtml(coverSrc)}" alt="${escapeHtml(data.titolo)}" data-titolo="${escapeHtml(data.titolo)}" onerror="imgFallback(this)">`
+                    : `<div class="cover detail-cover-placeholder">${escapeHtml(data.titolo) || ''}</div>`}
                 ${data.url_pagina
-                    ? `<a class="detail-external-link" href="${data.url_pagina}" target="_blank" rel="noopener">Vedi su diabolik.it ↗</a>`
+                    ? `<a class="detail-external-link" href="${escapeHtml(data.url_pagina)}" target="_blank" rel="noopener">Vedi su diabolik.it ↗</a>`
                     : ''}
             </div>
             <div class="detail-info">
-                <h1>${data.titolo || '---'}</h1>
+                <h1>${escapeHtml(data.titolo) || '---'}</h1>
                 ${metaHtml}
                 ${sinossiHtml}
 
@@ -95,7 +98,7 @@
 
                 <div class="user-section">
                     <h3>Tag</h3>
-                    <div class="tags-container" id="tags-container">${tagsHtml || '<span style="color:var(--text-secondary);font-size:13px;">Nessun tag</span>'}</div>
+                    <div class="tags-container" id="tags-container">${buildTagsHtml(data.tags)}</div>
                     <div class="tag-input-wrap">
                         <input type="text" id="tag-input" placeholder="Aggiungi tag..." autocomplete="off">
                         <div class="tag-suggestions" id="tag-suggestions"></div>
@@ -105,11 +108,16 @@
 
                 <div class="user-section">
                     <h3>Note</h3>
-                    <textarea class="note-textarea" id="note-area" placeholder="Scrivi le tue note...">${(data.note || '').replace(/</g, '&lt;')}</textarea>
+                    <textarea class="note-textarea" id="note-area" placeholder="Scrivi le tue note...">${escapeHtml(data.note || '')}</textarea>
                     <div class="save-indicator" id="note-status"></div>
                 </div>
             </div>
         `;
+
+        document.getElementById('tags-container').addEventListener('click', function(e) {
+            const removeEl = e.target.closest('.remove-tag');
+            if (removeEl) removeTag(removeEl.dataset.tag);
+        });
 
         initTagsAutocomplete();
         initNoteSave();
@@ -189,14 +197,11 @@
     }
 
     async function refreshTags() {
-        const data = await api('/api/albi/' + encodeURIComponent(slug));
-        const tagsHtml = data.tags.map(t =>
-            `<span class="tag-badge">${t} <span class="remove-tag" onclick="removeTag('${t.replace(/'/g, "\\'")}')">×</span></span>`
-        ).join('');
-        const container = document.getElementById('tags-container');
-        container.innerHTML = tagsHtml || '<span style="color:var(--text-secondary);font-size:13px;">Nessun tag</span>';
-
-        const allTagsData = await api('/api/tags');
+        const [data, allTagsData] = await Promise.all([
+            api('/api/albi/' + encodeURIComponent(slug)),
+            api('/api/tags'),
+        ]);
+        document.getElementById('tags-container').innerHTML = buildTagsHtml(data.tags);
         sessionStorage.setItem('all-tags', JSON.stringify(allTagsData.map(t => t.nome)));
     }
 
@@ -218,17 +223,26 @@
 
     function initNoteSave() {
         const textarea = document.getElementById('note-area');
+        const statusEl = document.getElementById('note-status');
 
         const save = debounce(async function() {
             try {
                 await apiPost('/api/albi/' + encodeURIComponent(slug) + '/note', { note: textarea.value });
+                statusEl.textContent = '';
+                statusEl.className = 'save-indicator';
                 showToast('Note salvate');
             } catch (e) {
+                statusEl.textContent = 'Errore salvataggio';
+                statusEl.className = 'save-indicator note-unsaved';
                 showToast('Errore salvataggio', 'error');
             }
         }, 1000);
 
-        textarea.addEventListener('input', save);
+        textarea.addEventListener('input', function() {
+            statusEl.textContent = 'Modifiche non salvate…';
+            statusEl.className = 'save-indicator note-unsaved';
+            save();
+        });
     }
 
     document.getElementById('back-link').addEventListener('click', function(e) {
@@ -241,7 +255,25 @@
         }
     });
 
+    async function loadAdjacent() {
+        try {
+            const adj = await api('/api/albi/' + encodeURIComponent(slug) + '/adjacent');
+            const nav = document.getElementById('albo-nav');
+            let html = '';
+            if (adj.prev) {
+                html += `<a class="adj-btn" href="/albo/${encodeURIComponent(adj.prev.slug)}">← #${adj.prev.numero} ${escapeHtml(adj.prev.titolo)}</a>`;
+            }
+            if (adj.next) {
+                html += `<a class="adj-btn" href="/albo/${encodeURIComponent(adj.next.slug)}">#${adj.next.numero} ${escapeHtml(adj.next.titolo)} →</a>`;
+            }
+            nav.innerHTML = html;
+        } catch (e) {
+            // adjacent nav is non-critical, fail silently
+        }
+    }
+
     loadAlbo();
+    loadAdjacent();
 </script>
 </body>
 </html>

@@ -22,14 +22,14 @@
     document.addEventListener('DOMContentLoaded', updateThemeButton);
 })();
 
-// Navbar
+// Navbar with active link highlighting
 function renderNavbar(currentPage) {
     const nav = document.createElement('nav');
     nav.className = 'navbar';
     nav.innerHTML = `
         <a href="/" class="logo">DIABOLIK <span>Archive</span></a>
-        <a href="/">🏠 Home</a>
-        <a href="/impostazioni">⚙️ Impostazioni</a>
+        <a href="/" class="${currentPage === 'home' ? 'active' : ''}">🏠 Home</a>
+        <a href="/impostazioni" class="${currentPage === 'settings' ? 'active' : ''}">⚙️ Impostazioni</a>
         <div class="spacer"></div>
         <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙 Scuro</button>
     `;
@@ -43,13 +43,24 @@ function coverUrl(copertinaLocale) {
     return '/covers/' + copertinaLocale;
 }
 
-// Fallback on image error
-function imgFallback(el, titolo) {
+// Fallback on image error — reads title from data-titolo attribute
+function imgFallback(el) {
     el.onerror = null;
     var placeholder = document.createElement('div');
     placeholder.className = 'cover';
-    placeholder.textContent = titolo || '';
+    placeholder.textContent = el.dataset.titolo || '';
     el.replaceWith(placeholder);
+}
+
+// HTML escape for safe innerHTML insertion
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // Debounce
@@ -93,19 +104,25 @@ async function apiDelete(url) {
     return resp.json();
 }
 
+// Non-blocking snackbar (replaces modal toast overlay)
 function showToast(message, type) {
     type = type || 'success';
-    var old = document.querySelector('.toast-overlay');
+    var old = document.querySelector('.snackbar');
     if (old) old.remove();
 
-    var overlay = document.createElement('div');
-    overlay.className = 'toast-overlay';
-    overlay.innerHTML = '<div class="toast-box toast-' + type + '">' + message + '</div>';
-    document.body.appendChild(overlay);
+    var snackbar = document.createElement('div');
+    snackbar.className = 'snackbar snackbar-' + type;
+    snackbar.textContent = message;
+    document.body.appendChild(snackbar);
 
-    overlay.addEventListener('click', function() { overlay.remove(); });
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+            snackbar.classList.add('snackbar-show');
+        });
+    });
+
     setTimeout(function() {
-        overlay.style.opacity = '0';
-        setTimeout(function() { overlay.remove(); }, 300);
+        snackbar.classList.remove('snackbar-show');
+        setTimeout(function() { snackbar.remove(); }, 300);
     }, 2500);
 }

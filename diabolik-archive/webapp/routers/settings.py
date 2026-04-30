@@ -22,6 +22,7 @@ _refresh_error = None
 
 SCRAPER_DIR = os.path.join(os.path.dirname(__file__), "..", "..")
 SCRAPER_PATH = os.path.join(SCRAPER_DIR, "scraper.py")
+PYTHON_PATH = os.path.join(SCRAPER_DIR, ".venv", "bin", "python")
 
 
 @router.get("/status")
@@ -49,7 +50,7 @@ def api_refresh():
 
     try:
         _refresh_process = subprocess.Popen(
-            ["python", SCRAPER_PATH],
+            [PYTHON_PATH, SCRAPER_PATH],
             cwd=SCRAPER_DIR,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,

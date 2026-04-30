@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impostazioni - Diabolik Archive</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<script src="/static/app.js"></script>
+<script>
+    renderNavbar('settings');
+</script>
+
+<div class="container">
+    <h1 style="margin-bottom:20px;">Impostazioni</h1>
+
+    <div class="settings-card">
+        <h2>Statistiche archivio</h2>
+        <div class="stats-grid" id="stats-grid">
+            Caricamento...
+        </div>
+    </div>
+
+    <div class="settings-card">
+        <h2>Aggiornamento archivio</h2>
+        <p style="margin-bottom:12px;font-size:14px;color:var(--text-secondary);">
+            Avvia lo scraper per cercare nuovi albi su diabolik.it.
+            Il processo continua in background.
+        </p>
+        <button class="btn btn-primary" id="btn-refresh" onclick="startRefresh()">Avvia refresh</button>
+        <div class="refresh-status" id="refresh-status"></div>
+    </div>
+
+    <div class="settings-card">
+        <h2>Ordinamento</h2>
+        <p style="margin-bottom:12px;font-size:14px;color:var(--text-secondary);">
+            Ordine di visualizzazione degli albi nella griglia.
+        </p>
+        <div class="order-toggle">
+            <span class="order-label left">Crescente</span>
+            <label class="slider-switch">
+                <input type="checkbox" id="toggle-order" onchange="toggleOrder()" checked>
+                <span class="slider"></span>
+            </label>
+            <span class="order-label right">Decrescente</span>
+        </div>
+    </div>
+
+    <div class="settings-card">
+        <h2>Backup</h2>
+        <p style="margin-bottom:12px;font-size:14px;color:var(--text-secondary);">
+            Scarica una copia del database SQLite.
+        </p>
+        <button class="btn" onclick="downloadBackup()">Scarica backup DB</button>
+    </div>
+</div>
+
+<script>
+    let refreshPolling = null;
+
+    async function loadStats() {
+        const stats = await api('/api/settings/status');
+        document.getElementById('stats-grid').innerHTML = `
+            <div class="stat-item">
+                <div class="stat-value">${stats.totale_albi}</div>
+                <div class="stat-label">Albi totali</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">${stats.totale_preferiti}</div>
+                <div class="stat-label">Preferiti</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">${stats.db_size_mb} MB</div>
+                <div class="stat-label">Dimensione DB</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" style="font-size:18px;">${stats.ultimo_scrape || '---'}</div>
+                <div class="stat-label">Ultimo aggiornamento</div>
+            </div>
+        `;
+    }
+
+    async function startRefresh() {
+        const btn = document.getElementById('btn-refresh');
+        btn.disabled = true;
+        btn.textContent = 'Avvio in corso...';
+
+        try {
+            const data = await apiPost('/api/settings/refresh');
+            document.getElementById('refresh-status').textContent =
+                'In corso... (PID: ' + data.pid + ')';
+            btn.textContent = 'Refresh in corso...';
+            startRefreshPolling();
+        } catch (e) {
+            document.getElementById('refresh-status').textContent = 'Errore: ' + e.message;
+            btn.disabled = false;
+            btn.textContent = 'Avvia refresh';
+        }
+    }
+
+    function startRefreshPolling() {
+        if (refreshPolling) clearInterval(refreshPolling);
+
+        refreshPolling = setInterval(async () => {
+            try {
+                const data = await api('/api/settings/refresh/status');
+                const statusEl = document.getElementById('refresh-status');
+                const btn = document.getElementById('btn-refresh');
+
+                if (data.in_corso) {
+                    statusEl.textContent = 'In corso... (avviato alle ' +
+                        new Date(data.avviato_alle).toLocaleTimeString() + ')';
+                } else {
+                    clearInterval(refreshPolling);
+                    refreshPolling = null;
+
+                    if (data.errore) {
+                        statusEl.textContent = 'Errore: ' + data.errore;
+                    } else {
+                        statusEl.textContent = 'Completato - ' + data.albi_aggiunti + ' nuovi albi aggiunti';
+                    }
+                    btn.disabled = false;
+                    btn.textContent = 'Avvia refresh';
+                    loadStats();
+                }
+            } catch (e) {
+                // ignore polling errors
+            }
+        }, 5000);
+    }
+
+    function downloadBackup() {
+        window.location.href = '/api/settings/backup';
+    }
+
+    function initOrderToggle() {
+        const order = localStorage.getItem('diabolik-order') || 'desc';
+        document.getElementById('toggle-order').checked = (order === 'desc');
+    }
+
+    function toggleOrder() {
+        const checked = document.getElementById('toggle-order').checked;
+        localStorage.setItem('diabolik-order', checked ? 'desc' : 'asc');
+    }
+
+    initOrderToggle();
+    loadStats();
+</script>
+</body>
+</html>

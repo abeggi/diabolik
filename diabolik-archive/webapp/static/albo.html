@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albo - Diabolik Archive</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<script src="/static/app.js"></script>
+<script>
+    renderNavbar('detail');
+</script>
+
+<div class="container">
+    <a href="/" class="back-link" id="back-link">← Torna ai risultati</a>
+
+    <div class="detail-layout" id="detail">
+        <p>Caricamento...</p>
+    </div>
+</div>
+
+<script>
+    const slug = window.location.pathname.replace('/albo/', '');
+
+    async function loadAlbo() {
+        try {
+            const [data, tagsData] = await Promise.all([
+                api('/api/albi/' + encodeURIComponent(slug)),
+                api('/api/tags')
+            ]);
+            sessionStorage.setItem('all-tags', JSON.stringify(tagsData.map(t => t.nome)));
+            renderAlbo(data);
+            document.title = data.titolo + ' - Diabolik Archive';
+        } catch (e) {
+            document.getElementById('detail').innerHTML =
+                '<p style="color:var(--accent)">Errore: ' + e.message + '</p>';
+        }
+    }
+
+    function renderAlbo(data) {
+        const coverSrc = coverUrl(data.copertina_locale);
+
+        const metadataFields = [
+            ['Numero Inedito', data.numero_inedito],
+            ['Anno', data.anno],
+            ['Mese', data.mese],
+            ['Pagine', data.numero_pagine],
+            ['Soggetto', data.soggetto],
+            ['Sceneggiatura', data.sceneggiatura],
+            ['Matita', data.matita],
+            ['Chine', data.chine],
+            ['Lettering', data.lettering],
+            ['Retini', data.retini],
+            ['Copertinista', data.copertinista],
+        ].filter(([, v]) => v != null && v !== '');
+
+        let metaHtml = '<table class="metadata-table">';
+        for (const [label, value] of metadataFields) {
+            metaHtml += `<tr><td class="label">${label}</td><td>${value}</td></tr>`;
+        }
+        metaHtml += '</table>';
+
+        let sinossiHtml = '';
+        if (data.sinossi) {
+            sinossiHtml = `<div class="sinossi"><strong>Sinossi</strong><br>${data.sinossi}</div>`;
+        }
+
+        const tagsHtml = data.tags.map(t =>
+            `<span class="tag-badge">${t} <span class="remove-tag" onclick="removeTag('${t.replace(/'/g, "\\'")}')">×</span></span>`
+        ).join('');
+
+        const allTags = JSON.parse(sessionStorage.getItem('all-tags') || '[]');
+
+        document.getElementById('detail').innerHTML = `
+            <div class="detail-cover">
+                ${coverSrc
+                    ? `<img src="${coverSrc}" alt="${data.titolo}" onerror="imgFallback(this,'${(data.titolo || '').replace(/'/g, "\\'")}')">`
+                    : `<div class="cover" style="aspect-ratio:2/3;font-size:16px;">${data.titolo || ''}</div>`}
+                ${data.url_pagina
+                    ? `<a class="detail-external-link" href="${data.url_pagina}" target="_blank" rel="noopener">Vedi su diabolik.it ↗</a>`
+                    : ''}
+            </div>
+            <div class="detail-info">
+                <h1>${data.titolo || '---'}</h1>
+                ${metaHtml}
+                ${sinossiHtml}
+
+                <div class="user-section">
+                    <h3>Preferito</h3>
+                    <button class="btn ${data.preferito ? 'preferito-active' : ''}" id="btn-preferito" onclick="togglePreferito()">
+                        ${data.preferito ? '★ Preferito' : '☆ Aggiungi ai preferiti'}
+                    </button>
+                </div>
+
+                <div class="user-section">
+                    <h3>Tag</h3>
+                    <div class="tags-container" id="tags-container">${tagsHtml || '<span style="color:var(--text-secondary);font-size:13px;">Nessun tag</span>'}</div>
+                    <div class="tag-input-wrap">
+                        <input type="text" id="tag-input" placeholder="Aggiungi tag..." autocomplete="off">
+                        <div class="tag-suggestions" id="tag-suggestions"></div>
+                    </div>
+                    <div class="save-indicator" id="tag-status"></div>
+                </div>
+
+                <div class="user-section">
+                    <h3>Note</h3>
+                    <textarea class="note-textarea" id="note-area" placeholder="Scrivi le tue note...">${(data.note || '').replace(/</g, '&lt;')}</textarea>
+                    <div class="save-indicator" id="note-status"></div>
+                </div>
+            </div>
+        `;
+
+        initTagsAutocomplete();
+        initNoteSave();
+    }
+
+    function initTagsAutocomplete() {
+        const input = document.getElementById('tag-input');
+        const suggestions = document.getElementById('tag-suggestions');
+
+        input.addEventListener('input', function() {
+            const val = this.value.trim().toLowerCase();
+            if (!val) {
+                suggestions.classList.remove('active');
+                return;
+            }
+            const allTags = JSON.parse(sessionStorage.getItem('all-tags') || '[]');
+            const currentTags = Array.from(document.querySelectorAll('.tag-badge')).map(b => b.textContent.replace('×', '').trim().toLowerCase());
+            const filtered = allTags.filter(t =>
+                t.toLowerCase().includes(val) && !currentTags.includes(t.toLowerCase())
+            ).slice(0, 8);
+
+            if (filtered.length === 0) {
+                suggestions.classList.remove('active');
+                return;
+            }
+
+            suggestions.innerHTML = filtered.map(t =>
+                `<div class="tag-suggestion-item" data-tag="${t}">${t}</div>`
+            ).join('');
+            suggestions.classList.add('active');
+
+            suggestions.querySelectorAll('.tag-suggestion-item').forEach(item => {
+                item.onclick = function() {
+                    addTag(this.dataset.tag);
+                    input.value = '';
+                    suggestions.classList.remove('active');
+                };
+            });
+        });
+
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const val = this.value.trim();
+                if (val) {
+                    addTag(val);
+                    this.value = '';
+                    document.getElementById('tag-suggestions').classList.remove('active');
+                }
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.tag-input-wrap')) {
+                suggestions.classList.remove('active');
+            }
+        });
+    }
+
+    async function addTag(tagName) {
+        try {
+            await apiPost('/api/albi/' + encodeURIComponent(slug) + '/tags', { tag: tagName });
+            await refreshTags();
+            showToast('Tag aggiunto: ' + tagName);
+        } catch (e) {
+            showToast('Errore: ' + e.message, 'error');
+        }
+    }
+
+    async function removeTag(tagName) {
+        try {
+            await apiDelete('/api/albi/' + encodeURIComponent(slug) + '/tags/' + encodeURIComponent(tagName));
+            await refreshTags();
+            showToast('Tag rimosso: ' + tagName);
+        } catch (e) {
+            showToast('Errore: ' + e.message, 'error');
+        }
+    }
+
+    async function refreshTags() {
+        const data = await api('/api/albi/' + encodeURIComponent(slug));
+        const tagsHtml = data.tags.map(t =>
+            `<span class="tag-badge">${t} <span class="remove-tag" onclick="removeTag('${t.replace(/'/g, "\\'")}')">×</span></span>`
+        ).join('');
+        const container = document.getElementById('tags-container');
+        container.innerHTML = tagsHtml || '<span style="color:var(--text-secondary);font-size:13px;">Nessun tag</span>';
+
+        const allTagsData = await api('/api/tags');
+        sessionStorage.setItem('all-tags', JSON.stringify(allTagsData.map(t => t.nome)));
+    }
+
+    async function togglePreferito() {
+        try {
+            const data = await apiPost('/api/albi/' + encodeURIComponent(slug) + '/preferito');
+            const btn = document.getElementById('btn-preferito');
+            if (data.preferito) {
+                btn.textContent = '★ Preferito';
+                btn.classList.add('preferito-active');
+            } else {
+                btn.textContent = '☆ Aggiungi ai preferiti';
+                btn.classList.remove('preferito-active');
+            }
+        } catch (e) {
+            alert('Errore: ' + e.message);
+        }
+    }
+
+    function initNoteSave() {
+        const textarea = document.getElementById('note-area');
+
+        const save = debounce(async function() {
+            try {
+                await apiPost('/api/albi/' + encodeURIComponent(slug) + '/note', { note: textarea.value });
+                showToast('Note salvate');
+            } catch (e) {
+                showToast('Errore salvataggio', 'error');
+            }
+        }, 1000);
+
+        textarea.addEventListener('input', save);
+    }
+
+    document.getElementById('back-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        const qs = sessionStorage.getItem('search-query');
+        if (qs) {
+            location.href = '/?' + qs;
+        } else {
+            location.href = '/';
+        }
+    });
+
+    loadAlbo();
+</script>
+</body>
+</html>

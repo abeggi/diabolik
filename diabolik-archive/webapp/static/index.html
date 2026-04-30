@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabolik Archive</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<script src="/static/app.js"></script>
+<script>
+    renderNavbar('home');
+</script>
+
+<div class="container">
+    <div class="search-bar">
+        <input type="text" id="q" placeholder="Cerca per titolo...">
+        <button class="filters-toggle" onclick="toggleFilters()">🔽 Filtri</button>
+    </div>
+
+    <div class="filters-panel hidden" id="filters-panel">
+        <select id="filter-anno">
+            <option value="">Tutti gli anni</option>
+        </select>
+        <input type="text" id="filter-autore" placeholder="Autore (soggetto, disegni...)">
+        <select id="filter-tag">
+            <option value="">Tutti i tag</option>
+        </select>
+        <label>
+            <input type="checkbox" id="filter-preferito">
+            Solo preferiti
+        </label>
+        <button class="btn" onclick="resetFilters()">↺ Reset filtri</button>
+    </div>
+
+    <div class="results-counter" id="counter"></div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="pagination" id="pagination"></div>
+</div>
+
+<script>
+    const LIMIT = 50;
+    let currentPage = 1;
+    let totalResults = 0;
+
+    let allTags = [];
+
+    function toggleFilters() {
+        document.getElementById('filters-panel').classList.toggle('hidden');
+    }
+
+    function resetFilters() {
+        document.getElementById('q').value = '';
+        document.getElementById('filter-anno').value = '';
+        document.getElementById('filter-autore').value = '';
+        document.getElementById('filter-tag').value = '';
+        document.getElementById('filter-preferito').checked = false;
+        document.getElementById('filters-panel').classList.add('hidden');
+        sessionStorage.removeItem('search-query');
+        currentPage = 1;
+        loadResults();
+    }
+
+    function buildQuery() {
+        const params = new URLSearchParams();
+        const q = document.getElementById('q').value.trim();
+        const anno = document.getElementById('filter-anno').value;
+        const autore = document.getElementById('filter-autore').value.trim();
+        const preferito = document.getElementById('filter-preferito').checked;
+        const tag = document.getElementById('filter-tag').value;
+
+        if (q) params.set('q', q);
+        if (anno) params.set('anno', anno);
+        if (autore) params.set('autore', autore);
+        if (preferito) params.set('preferito', '1');
+        if (tag) params.set('tag', tag);
+
+        params.set('limit', LIMIT);
+        params.set('offset', (currentPage - 1) * LIMIT);
+        params.set('order', localStorage.getItem('diabolik-order') || 'desc');
+
+        return params.toString();
+    }
+
+    async function loadResults() {
+        const qs = buildQuery();
+        const data = await api('/api/albi?' + qs);
+        totalResults = data.total;
+
+        document.getElementById('counter').textContent =
+            totalResults + ' albi trovati';
+
+        const grid = document.getElementById('grid');
+        grid.innerHTML = '';
+
+        if (data.results.length === 0) {
+            grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--text-secondary);padding:40px;">Nessun albo trovato</p>';
+        }
+
+        for (const a of data.results) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.onclick = () => {
+                sessionStorage.setItem('search-query', qs);
+                location.href = '/albo/' + encodeURIComponent(a.slug);
+            };
+
+            const coverSrc = coverUrl(a.copertina_locale);
+
+            let badgesHtml = '';
+            if (a.preferito) badgesHtml += '<span class="badge preferito">★</span>';
+            if (a.ha_note) badgesHtml += '<span class="badge">📝</span>';
+
+            card.innerHTML = `
+                ${coverSrc
+                    ? `<img class="cover" src="${coverSrc}" alt="${a.titolo}" onerror="imgFallback(this,'${(a.titolo || '').replace(/'/g, "\\'")}')">`
+                    : `<div class="cover">${a.titolo || ''}</div>`}
+                <div class="info">
+                    <div class="titolo">
+                        <span class="titolo-text">${a.titolo || '---'}</span>
+                        ${badgesHtml ? `<span class="badges">${badgesHtml}</span>` : ''}
+                    </div>
+                    <div class="meta">${a.anno || '?'} · #${a.numero_inedito || '?'}</div>
+                </div>
+            `;
+            grid.appendChild(card);
+        }
+
+        renderPagination();
+    }
+
+    function renderPagination() {
+        const totalPages = Math.ceil(totalResults / LIMIT);
+        const pag = document.getElementById('pagination');
+        pag.innerHTML = '';
+
+        if (totalPages <= 1) return;
+
+        pag.appendChild(createPageBtn('← Precedente', currentPage - 1, currentPage <= 1));
+
+        const start = Math.max(1, currentPage - 2);
+        const end = Math.min(totalPages, currentPage + 2);
+
+        if (start > 1) {
+            pag.appendChild(createPageBtn('1', 1, false));
+            if (start > 2) {
+                const span = document.createElement('span');
+                span.textContent = '...';
+                pag.appendChild(span);
+            }
+        }
+
+        for (let p = start; p <= end; p++) {
+            const btn = createPageBtn(String(p), p, false);
+            if (p === currentPage) btn.classList.add('active');
+            pag.appendChild(btn);
+        }
+
+        if (end < totalPages) {
+            if (end < totalPages - 1) {
+                const span = document.createElement('span');
+                span.textContent = '...';
+                pag.appendChild(span);
+            }
+            pag.appendChild(createPageBtn(String(totalPages), totalPages, false));
+        }
+
+        pag.appendChild(createPageBtn('Successivo →', currentPage + 1, currentPage >= totalPages));
+    }
+
+    function createPageBtn(text, page, disabled) {
+        const btn = document.createElement('button');
+        btn.textContent = text;
+        btn.disabled = disabled;
+        if (!disabled) {
+            btn.onclick = () => { currentPage = page; loadResults(); window.scrollTo(0, 0); };
+        }
+        return btn;
+    }
+
+    async function loadYears() {
+        const years = await api('/api/albi/filters/years');
+        const sel = document.getElementById('filter-anno');
+        years.forEach(y => {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            sel.appendChild(opt);
+        });
+    }
+
+    async function loadTags() {
+        allTags = await api('/api/tags');
+        const sel = document.getElementById('filter-tag');
+        allTags.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t.nome;
+            opt.textContent = t.nome + ' (' + t.conteggio + ')';
+            sel.appendChild(opt);
+        });
+    }
+
+    function restoreSearch() {
+        const qs = sessionStorage.getItem('search-query');
+        if (qs) {
+            const params = new URLSearchParams(qs);
+            document.getElementById('q').value = params.get('q') || '';
+            document.getElementById('filter-anno').value = params.get('anno') || '';
+            document.getElementById('filter-autore').value = params.get('autore') || '';
+            document.getElementById('filter-preferito').checked = params.get('preferito') === '1';
+            const tag = params.get('tag') || '';
+            document.getElementById('filter-tag').value = tag;
+            if (tag || params.get('q') || params.get('anno') || params.get('autore') || params.get('preferito')) {
+                document.getElementById('filters-panel').classList.remove('hidden');
+            }
+        }
+    }
+
+    const debouncedSearch = debounce(() => {
+        currentPage = 1;
+        loadResults();
+    }, 300);
+
+    document.getElementById('q').addEventListener('input', debouncedSearch);
+    document.getElementById('filter-anno').addEventListener('change', debouncedSearch);
+    document.getElementById('filter-autore').addEventListener('input', debouncedSearch);
+    document.getElementById('filter-preferito').addEventListener('change', debouncedSearch);
+    document.getElementById('filter-tag').addEventListener('change', debouncedSearch);
+
+    async function init() {
+        await Promise.all([loadYears(), loadTags()]);
+        restoreSearch();
+        loadResults();
+    }
+
+    init();
+</script>
+</body>
+</html>

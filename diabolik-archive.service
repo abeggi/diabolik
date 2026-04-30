@@ -1,0 +1,15 @@
+[Unit]
+Description=Diabolik Archive Webapp
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/diabolik/diabolik-archive/webapp
+ExecStart=/diabolik/diabolik-archive/.venv/bin/python main.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

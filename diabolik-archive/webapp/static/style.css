@@ -855,6 +855,107 @@ body {
     width: 50%;
 }
 
+/* Hamburger button — hidden on desktop */
+.hamburger {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-nav);
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 26px;
+    line-height: 1;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.hamburger:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile dropdown menu */
+.mobile-menu {
+    position: fixed;
+    top: 52px;
+    left: 0;
+    right: 0;
+    background: var(--bg-nav);
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mobile-menu a {
+    color: var(--text-nav);
+    text-decoration: none;
+    padding: 15px 24px;
+    font-size: 15px;
+    opacity: 0.85;
+    transition: background 0.15s, opacity 0.15s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mobile-menu a:last-child {
+    border-bottom: none;
+}
+
+.mobile-menu a:hover,
+.mobile-menu a.active {
+    background: rgba(255, 255, 255, 0.07);
+    opacity: 1;
+}
+
+.mobile-menu a.active {
+    border-left: 3px solid var(--accent);
+    padding-left: 21px;
+}
+
+/* Mobile: hamburger a sinistra, nav links nascosti, input touch-friendly */
+@media (max-width: 580px) {
+    .navbar .nav-link {
+        display: none;
+    }
+
+    .hamburger {
+        display: flex;
+        order: -1;
+    }
+
+    .navbar .logo {
+        border-right: none;
+        padding-right: 0;
+        margin-right: 0;
+    }
+
+    /* Input e select: full-width, font 16px evita zoom iOS */
+    .search-bar input[type="text"],
+    .filters-panel select,
+    .filters-panel input[type="text"] {
+        width: 100%;
+        font-size: 16px;
+        padding: 12px 14px;
+    }
+
+    .filter-autore-wrap {
+        width: 100%;
+    }
+
+    .filters-panel {
+        flex-direction: column;
+    }
+
+    .filters-panel label {
+        font-size: 16px;
+        padding: 4px 0;
+    }
+}
+
 /* Responsive detail layout */
 @media (max-width: 700px) {
     .detail-layout {

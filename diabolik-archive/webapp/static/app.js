@@ -22,19 +22,53 @@
     document.addEventListener('DOMContentLoaded', updateThemeButton);
 })();
 
-// Navbar with active link highlighting
+// Navbar with active link highlighting + mobile hamburger menu
 function renderNavbar(currentPage) {
     const nav = document.createElement('nav');
     nav.className = 'navbar';
     nav.innerHTML = `
         <a href="/" class="logo">DIABOLIK <span>Archive</span></a>
-        <a href="/" class="${currentPage === 'home' ? 'active' : ''}">🏠 Home</a>
-        <a href="/impostazioni" class="${currentPage === 'settings' ? 'active' : ''}">⚙️ Impostazioni</a>
+        <a href="/" class="nav-link ${currentPage === 'home' ? 'active' : ''}">🏠 Home</a>
+        <a href="/impostazioni" class="nav-link ${currentPage === 'settings' ? 'active' : ''}">⚙️ Impostazioni</a>
         <div class="spacer"></div>
         <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙 Scuro</button>
+        <button class="hamburger" id="hamburger-btn" onclick="toggleMobileMenu()" aria-label="Menu">☰</button>
     `;
+
+    const mobileMenu = document.createElement('div');
+    mobileMenu.className = 'mobile-menu hidden';
+    mobileMenu.id = 'mobile-menu';
+    mobileMenu.innerHTML = `
+        <a href="/" class="${currentPage === 'home' ? 'active' : ''}">🏠 Home</a>
+        <a href="/impostazioni" class="${currentPage === 'settings' ? 'active' : ''}">⚙️ Impostazioni</a>
+    `;
+
+    document.body.prepend(mobileMenu);
     document.body.prepend(nav);
     updateThemeButton();
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.navbar') && !e.target.closest('.mobile-menu')) {
+            closeMobileMenu();
+        }
+    });
+}
+
+window.toggleMobileMenu = function() {
+    const menu = document.getElementById('mobile-menu');
+    const btn = document.getElementById('hamburger-btn');
+    if (!menu) return;
+    const isOpen = !menu.classList.contains('hidden');
+    menu.classList.toggle('hidden');
+    btn.textContent = isOpen ? '☰' : '✕';
+};
+
+function closeMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    const btn = document.getElementById('hamburger-btn');
+    if (!menu || menu.classList.contains('hidden')) return;
+    menu.classList.add('hidden');
+    if (btn) btn.textContent = '☰';
 }
 
 // Cover URL helper

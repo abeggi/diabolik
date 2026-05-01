@@ -3,8 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diabolik Archive — Archivio personale degli albi</title>
-    <meta name="description" content="Archivio locale self-hosted degli albi Diabolik Inedito. Scraper automatico, webapp, Docker.">
+    <title>Diabolik Archive — Archivio personale degli albi Diabolik Inedito</title>
+    <meta name="description" content="Archivio personale self-hosted degli albi Diabolik Inedito. Scraper automatico, ricerca avanzata, tag, preferiti e supporto Docker. Open source, gira sul tuo server.">
+    <link rel="canonical" href="https://abeggi.github.io/diabolik/">
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:url"         content="https://abeggi.github.io/diabolik/">
+    <meta property="og:title"       content="Diabolik Archive — Archivio personale degli albi">
+    <meta property="og:description" content="Archivio self-hosted degli albi Diabolik Inedito. Scraper automatico, webapp locale, Docker.">
+    <meta property="og:image"       content="https://abeggi.github.io/diabolik/diabolik-title.jpg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="Diabolik Archive">
+    <meta name="twitter:description" content="Archivio self-hosted degli albi Diabolik Inedito. Scraper automatico, webapp locale, Docker.">
+    <meta name="twitter:image"       content="https://abeggi.github.io/diabolik/diabolik-title.jpg">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -160,7 +175,22 @@
         .btn-ghost { background: transparent; color: var(--mid); border: 1px solid var(--border); }
         .btn-ghost:hover { border-color: var(--dim); color: var(--text); }
 
-        /* scroll hint */
+        /* badges */
+        .hero-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 24px;
+            animation: fadeUp .7s ease .42s both;
+        }
+
+        .hero-badges img {
+            height: 20px;
+            display: block;
+        }
+
+        /* scroll chevron */
         .hero-scroll {
             position: absolute;
             bottom: 32px;
@@ -169,26 +199,89 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             z-index: 1;
-            animation: scrollBounce 2.4s ease-in-out infinite;
+            text-decoration: none;
         }
 
-        @keyframes scrollBounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50%       { transform: translateX(-50%) translateY(7px); }
+        .scroll-chevron {
+            animation: chevronBounce 2s ease-in-out infinite;
         }
 
-        .scroll-line {
-            width: 1px;
-            height: 40px;
-            background: linear-gradient(to bottom, var(--red), transparent);
+        @keyframes chevronBounce {
+            0%, 100% { transform: translateY(0); opacity: .5; }
+            50%       { transform: translateY(6px); opacity: 1; }
         }
 
-        .scroll-label {
+        /* ── SCREENSHOT MOCKUP ────────────────── */
+
+        .mockup-wrap {
+            width: 100%;
+            background: var(--bg);
+            padding: 64px 40px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* replace the div below with <img src="screenshot.png" alt="Screenshot webapp"> */
+        .mockup {
+            width: 100%;
+            max-width: 960px;
+            aspect-ratio: 16 / 9;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            box-shadow: 0 24px 80px rgba(0,0,0,.55), 0 0 0 1px var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .mockup-bar {
+            height: 36px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .mockup-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            background: var(--border);
+        }
+
+        .mockup-url {
+            flex: 1;
+            height: 20px;
+            background: var(--bg);
+            border-radius: 4px;
+            margin: 0 8px;
+        }
+
+        .mockup-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 12px;
+            color: var(--dim);
+        }
+
+        .mockup-body-icon {
+            font-size: 32px;
+            opacity: .4;
+        }
+
+        .mockup-body-label {
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 13px;
-            letter-spacing: .2em;
+            font-size: 14px;
+            letter-spacing: .18em;
             text-transform: uppercase;
             color: var(--dim);
         }
@@ -293,9 +386,89 @@
             line-height: 1.65;
         }
 
+        /* ── WORKFLOW ─────────────────────────── */
+
+        .workflow { background: var(--bg); }
+
+        .steps {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 0;
+        }
+
+        .step {
+            flex: 1;
+            max-width: 280px;
+            text-align: center;
+            padding: 0 16px;
+        }
+
+        .step-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 20px;
+        }
+
+        .step-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 12px;
+            letter-spacing: .2em;
+            color: var(--red);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .step-title {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .step-desc {
+            font-size: 15px;
+            color: var(--mid);
+            line-height: 1.6;
+        }
+
+        .step-arrow {
+            flex-shrink: 0;
+            padding-top: 20px;
+            color: var(--red-dim);
+            font-size: 22px;
+            line-height: 64px;
+            margin-top: 0;
+            user-select: none;
+        }
+
+        @media (max-width: 680px) {
+            .steps {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+            .step { max-width: 100%; padding: 0; }
+            .step-arrow {
+                transform: rotate(90deg);
+                line-height: 1;
+                padding-top: 0;
+            }
+        }
+
         /* ── SETUP ────────────────────────────── */
 
-        .setup { background: var(--bg); }
+        .setup { background: var(--surface); }
 
         .tabs {
             display: flex;
@@ -323,7 +496,7 @@
 
         .tab-panel {
             display: none;
-            background: var(--surface);
+            background: var(--surface2);
             border: 1px solid var(--border);
             border-top: none;
             padding: 32px 36px;
@@ -361,17 +534,23 @@
         footer {
             background: var(--surface);
             border-top: 1px solid var(--border);
-            padding: 32px 40px;
+            padding: 36px 40px;
         }
 
         .footer-inner {
             max-width: 1080px;
             margin: 0 auto;
+        }
+
+        .footer-top {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 16px;
+            gap: 20px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
         }
 
         .footer-logo {
@@ -381,16 +560,10 @@
         }
         .footer-logo em { color: var(--red); font-style: normal; }
 
-        .footer-copy {
-            font-family: 'Barlow Condensed', sans-serif;
-            font-size: 15px;
-            letter-spacing: .1em;
-            color: var(--dim);
-        }
-
         .footer-links {
             display: flex;
-            gap: 22px;
+            gap: 28px;
+            flex-wrap: wrap;
         }
 
         .footer-links a {
@@ -402,8 +575,39 @@
             color: var(--dim);
             text-decoration: none;
             transition: color .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
         .footer-links a:hover { color: var(--red); }
+
+        .footer-sep {
+            width: 1px;
+            height: 16px;
+            background: var(--border);
+            align-self: center;
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .footer-copy {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 14px;
+            letter-spacing: .08em;
+            color: var(--dim);
+        }
+
+        .footer-copy a {
+            color: var(--dim);
+            text-decoration: none;
+        }
+        .footer-copy a:hover { color: var(--red); }
 
         /* ── REVEAL ───────────────────────────── */
 
@@ -423,8 +627,10 @@
 
         @media (max-width: 600px) {
             section { padding: 70px 24px; }
+            .mockup-wrap { padding: 48px 20px; }
             footer { padding: 28px 24px; }
-            .footer-inner { flex-direction: column; text-align: center; }
+            .footer-top { flex-direction: column; align-items: flex-start; }
+            .footer-bottom { flex-direction: column; align-items: flex-start; }
             .tab-panel { padding: 24px 20px; }
             .code { font-size: 13px; }
             .hero { padding: 60px 24px 100px; }
@@ -452,19 +658,52 @@
         </p>
 
         <div class="hero-actions">
-            <a href="https://github.com/abeggi/diabolik" class="btn btn-red">
+            <a href="https://github.com/abeggi/diabolik" class="btn btn-red" target="_blank" rel="noopener noreferrer">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
                 GitHub
             </a>
             <a href="#setup" class="btn btn-ghost">Installazione ↓</a>
         </div>
+
+        <div class="hero-badges">
+            <a href="https://github.com/abeggi/diabolik/stargazers" target="_blank" rel="noopener noreferrer">
+                <img src="https://img.shields.io/github/stars/abeggi/diabolik?style=flat-square&color=cc0000&labelColor=272420&label=stars" alt="GitHub stars">
+            </a>
+            <a href="https://github.com/abeggi/diabolik/commits" target="_blank" rel="noopener noreferrer">
+                <img src="https://img.shields.io/github/last-commit/abeggi/diabolik?style=flat-square&color=685e56&labelColor=272420" alt="Last commit">
+            </a>
+            <a href="https://hub.docker.com/r/abeggi/diabolik-archive" target="_blank" rel="noopener noreferrer">
+                <img src="https://img.shields.io/docker/pulls/abeggi/diabolik-archive?style=flat-square&color=685e56&labelColor=272420&label=docker%20pulls" alt="Docker pulls">
+            </a>
+            <a href="https://github.com/abeggi/diabolik/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">
+                <img src="https://img.shields.io/badge/license-GPL3-685e56?style=flat-square&labelColor=272420" alt="License GPL3">
+            </a>
+        </div>
     </div>
 
-    <div class="hero-scroll" aria-hidden="true">
-        <div class="scroll-line"></div>
-        <span class="scroll-label">scroll</span>
-    </div>
+    <a href="#mockup" class="hero-scroll" aria-label="Scorri in basso">
+        <svg class="scroll-chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"/>
+        </svg>
+    </a>
 </section>
+
+<!-- SCREENSHOT MOCKUP -->
+<div class="mockup-wrap" id="mockup">
+    <!-- Sostituisci questo div con: <img src="screenshot.png" alt="Screenshot webapp Diabolik Archive" style="width:100%;max-width:960px;border-radius:10px;border:1px solid var(--border);box-shadow:0 24px 80px rgba(0,0,0,.55)"> -->
+    <div class="mockup" role="img" aria-label="Screenshot webapp Diabolik Archive">
+        <div class="mockup-bar">
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+            <div class="mockup-url"></div>
+        </div>
+        <div class="mockup-body">
+            <div class="mockup-body-icon">🖥</div>
+            <div class="mockup-body-label">Screenshot webapp</div>
+        </div>
+    </div>
+</div>
 
 <!-- FEATURES -->
 <section class="features">
@@ -513,6 +752,41 @@
     </div>
 </section>
 
+<!-- WORKFLOW -->
+<section class="workflow">
+    <div class="inner">
+        <div class="s-label">Come funziona</div>
+        <h2 class="s-heading">TRE PASSI<br>E SEI OPERATIVO</h2>
+
+        <div class="steps">
+            <div class="step reveal">
+                <div class="step-icon">🐳</div>
+                <span class="step-num">Step 01</span>
+                <div class="step-title">Avvia il container</div>
+                <p class="step-desc"><code style="font-size:13px;color:var(--mid)">docker compose up -d</code><br>L'app è subito raggiungibile su localhost:8080.</p>
+            </div>
+
+            <div class="step-arrow reveal" aria-hidden="true">→</div>
+
+            <div class="step reveal">
+                <div class="step-icon">⚡</div>
+                <span class="step-num">Step 02</span>
+                <div class="step-title">Avvia lo scraper</div>
+                <p class="step-desc">Da Impostazioni → Avvia refresh. Lo scraper scarica metadati e copertine in autonomia.</p>
+            </div>
+
+            <div class="step-arrow reveal" aria-hidden="true">→</div>
+
+            <div class="step reveal">
+                <div class="step-icon">📚</div>
+                <span class="step-num">Step 03</span>
+                <div class="step-title">Sfoglia l'archivio</div>
+                <p class="step-desc">Cerca, filtra per anno o autore, segna i preferiti e aggiungi note personali.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- SETUP -->
 <section class="setup" id="setup">
     <div class="inner">
@@ -542,13 +816,13 @@
             <div class="code">
                 <div><span class="p">$</span><span class="k">git clone https://github.com/abeggi/diabolik</span></div>
                 <div><span class="p">$</span><span class="k">cd diabolik</span></div>
-                <div><span class="p">$</span><span class="k">python3 -m venv .venv && .venv/bin/pip install -r requirements.txt</span></div>
+                <div><span class="p">$</span><span class="k">python3 -m venv .venv &amp;&amp; .venv/bin/pip install -r requirements.txt</span></div>
                 <div>&nbsp;</div>
                 <div><span class="p">#</span><span class="c">avvia webapp</span></div>
-                <div><span class="p">$</span><span class="k">cd diabolik-archive/webapp && ../.venv/bin/python main.py</span></div>
+                <div><span class="p">$</span><span class="k">cd diabolik-archive/webapp &amp;&amp; ../.venv/bin/python main.py</span></div>
                 <div>&nbsp;</div>
                 <div><span class="p">#</span><span class="c">scarica gli albi (separatamente)</span></div>
-                <div><span class="p">$</span><span class="k">cd diabolik-archive && ../.venv/bin/python scraper.py</span></div>
+                <div><span class="p">$</span><span class="k">cd diabolik-archive &amp;&amp; ../.venv/bin/python scraper.py</span></div>
             </div>
             <p class="setup-note">Python 3.10+ richiesto.</p>
         </div>
@@ -558,16 +832,32 @@
 <!-- FOOTER -->
 <footer>
     <div class="footer-inner">
-        <div class="footer-logo"><em>DIABOLIK</em> ARCHIVE</div>
-        <div class="footer-copy">GPL3 License &nbsp;·&nbsp; Self-hosted</div>
-        <div class="footer-links">
-            <a href="https://github.com/abeggi/diabolik">GitHub ↗</a>
-            <a href="https://hub.docker.com/r/abeggi/diabolik-archive">Docker Hub ↗</a>
+        <div class="footer-top">
+            <div class="footer-logo"><em>DIABOLIK</em> ARCHIVE</div>
+            <div class="footer-links">
+                <a href="https://github.com/abeggi/diabolik" target="_blank" rel="noopener noreferrer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    GitHub
+                </a>
+                <div class="footer-sep" aria-hidden="true"></div>
+                <a href="https://hub.docker.com/r/abeggi/diabolik-archive" target="_blank" rel="noopener noreferrer">
+                    🐳 Docker Hub
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-copy">
+                &copy; <span id="footer-year"></span> Andrea Beggi &nbsp;·&nbsp;
+                <a href="https://github.com/abeggi/diabolik/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">GPL-3.0 License</a>
+            </div>
+            <div class="footer-copy">Self-hosted &nbsp;·&nbsp; No cloud &nbsp;·&nbsp; I tuoi dati restano tuoi</div>
         </div>
     </div>
 </footer>
 
 <script>
+    document.getElementById('footer-year').textContent = new Date().getFullYear();
+
     function switchTab(name) {
         document.querySelectorAll('.tab-btn').forEach(function(btn, i) {
             btn.classList.toggle('on', (name === 'docker' && i === 0) || (name === 'python' && i === 1));

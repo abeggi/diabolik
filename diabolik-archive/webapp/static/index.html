@@ -27,6 +27,7 @@
             <input type="text" id="filter-autore" placeholder="Autore (soggetto, disegni...)" autocomplete="off">
             <div class="tag-suggestions" id="autore-suggestions"></div>
         </div>
+        <input type="text" id="filter-sinossi" placeholder="Parola nella sinossi...">
         <select id="filter-tag">
             <option value="">Tutti i tag</option>
         </select>
@@ -52,13 +53,17 @@
     let allTags = [];
 
     function toggleFilters() {
-        document.getElementById('filters-panel').classList.toggle('hidden');
+        const panel = document.getElementById('filters-panel');
+        const isHidden = panel.classList.contains('hidden');
+        if (!isHidden && countActiveFilters() > 0) return;
+        panel.classList.toggle('hidden');
     }
 
     function countActiveFilters() {
         let count = 0;
         if (document.getElementById('filter-anno').value) count++;
         if (document.getElementById('filter-autore').value.trim()) count++;
+        if (document.getElementById('filter-sinossi').value.trim()) count++;
         if (document.getElementById('filter-tag').value) count++;
         if (document.getElementById('filter-preferito').checked) count++;
         return count;
@@ -75,6 +80,7 @@
         document.getElementById('q').value = '';
         document.getElementById('filter-anno').value = '';
         document.getElementById('filter-autore').value = '';
+        document.getElementById('filter-sinossi').value = '';
         document.getElementById('filter-tag').value = '';
         document.getElementById('filter-preferito').checked = false;
         document.getElementById('filters-panel').classList.add('hidden');
@@ -90,12 +96,14 @@
         const q = document.getElementById('q').value.trim();
         const anno = document.getElementById('filter-anno').value;
         const autore = document.getElementById('filter-autore').value.trim();
+        const sinossi = document.getElementById('filter-sinossi').value.trim();
         const preferito = document.getElementById('filter-preferito').checked;
         const tag = document.getElementById('filter-tag').value;
 
         if (q) params.set('q', q);
         if (anno) params.set('anno', anno);
         if (autore) params.set('autore', autore);
+        if (sinossi) params.set('sinossi', sinossi);
         if (preferito) params.set('preferito', '1');
         if (tag) params.set('tag', tag);
 
@@ -250,10 +258,11 @@
             document.getElementById('q').value = params.get('q') || '';
             document.getElementById('filter-anno').value = params.get('anno') || '';
             document.getElementById('filter-autore').value = params.get('autore') || '';
+            document.getElementById('filter-sinossi').value = params.get('sinossi') || '';
             document.getElementById('filter-preferito').checked = params.get('preferito') === '1';
             const tag = params.get('tag') || '';
             document.getElementById('filter-tag').value = tag;
-            if (tag || params.get('q') || params.get('anno') || params.get('autore') || params.get('preferito')) {
+            if (tag || params.get('q') || params.get('anno') || params.get('autore') || params.get('sinossi') || params.get('preferito')) {
                 document.getElementById('filters-panel').classList.remove('hidden');
             }
         }
@@ -267,6 +276,7 @@
     document.getElementById('q').addEventListener('input', debouncedSearch);
     document.getElementById('filter-anno').addEventListener('change', debouncedSearch);
     document.getElementById('filter-autore').addEventListener('input', debouncedSearch);
+    document.getElementById('filter-sinossi').addEventListener('input', debouncedSearch);
     document.getElementById('filter-preferito').addEventListener('change', debouncedSearch);
     document.getElementById('filter-tag').addEventListener('change', debouncedSearch);
 

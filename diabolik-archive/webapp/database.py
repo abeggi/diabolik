@@ -53,6 +53,7 @@ def search_albi(
     q=None,
     anno=None,
     autore=None,
+    sinossi=None,
     preferito=None,
     tag=None,
     limit=50,
@@ -76,6 +77,10 @@ def search_albi(
         conditions.append(autore_cond)
         like = f"%{autore}%"
         params.extend([like, like, like, like])
+
+    if sinossi:
+        conditions.append("a.sinossi LIKE ?")
+        params.append(f"%{sinossi}%")
 
     if preferito is not None and str(preferito) == "1":
         conditions.append("ud.preferito = 1")

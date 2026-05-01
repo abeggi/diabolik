@@ -78,14 +78,17 @@
             display: inline-block;
         }
 
+        .hero-title-wrap {
+            animation: fadeUp .7s ease both;
+            filter: drop-shadow(0 0 48px rgba(204,0,0,.4));
+        }
+
         .hero-title-img {
             display: block;
             width: min(560px, 90vw);
             margin: 0 auto;
-            filter: drop-shadow(0 0 40px rgba(204,0,0,.35));
-            -webkit-mask-image: radial-gradient(ellipse 88% 82% at 50% 50%, black 45%, transparent 100%);
-            mask-image: radial-gradient(ellipse 88% 82% at 50% 50%, black 45%, transparent 100%);
-            animation: fadeUp .7s ease both;
+            -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 50%, transparent 95%);
+            mask-image: radial-gradient(ellipse 85% 75% at 50% 50%, black 50%, transparent 95%);
         }
 
         @keyframes fadeUp {
@@ -435,7 +438,9 @@
     <div class="hero-inner">
         <span class="hero-eyebrow">Self-hosted &nbsp;·&nbsp; Open Source &nbsp;·&nbsp; Vol. I</span>
 
-        <img class="hero-title-img" src="diabolik-title.jpg" alt="Diabolik">
+        <div class="hero-title-wrap">
+            <img class="hero-title-img" src="diabolik-title.jpg" alt="Diabolik">
+        </div>
 
         <div class="hero-archive">Archive</div>
 

@@ -10,19 +10,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg:       #090909;
-            --surface:  #111111;
-            --surface2: #1a1a1a;
+            --bg:       #1e1b18;
+            --surface:  #272420;
+            --surface2: #312d29;
             --red:      #cc0000;
-            --red-dim:  #6a0006;
+            --red-dim:  #7a0006;
             --text:     #f0ebe4;
-            --mid:      #9a9188;
-            --dim:      #5a5248;
-            --border:   #242018;
+            --mid:      #9a9086;
+            --dim:      #685e56;
+            --border:   #3c3630;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
         html { scroll-behavior: smooth; }
 
         body {
@@ -33,7 +32,7 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* ── HERO ─────────────────────────────────── */
+        /* ── HERO ─────────────────────────────── */
 
         .hero {
             min-height: 100vh;
@@ -43,57 +42,46 @@
             justify-content: center;
             position: relative;
             overflow: hidden;
-            padding: 80px 24px 120px;
-            text-align: center;
+            padding: 80px 40px 120px;
         }
 
-        /* halftone dot field */
         .hero::before {
             content: '';
             position: absolute;
             inset: 0;
-            background-image: radial-gradient(circle, rgba(204,0,0,.14) 1px, transparent 1px);
-            background-size: 30px 30px;
+            background-image: radial-gradient(circle, rgba(204,0,0,.1) 1px, transparent 1px);
+            background-size: 32px 32px;
             pointer-events: none;
         }
 
-        /* thin diagonal red slash */
-        .hero::after {
-            content: '';
-            position: absolute;
-            top: -20%;
-            right: 12%;
-            width: 2px;
-            height: 140%;
-            background: linear-gradient(to bottom, transparent, var(--red) 40%, var(--red) 60%, transparent);
-            transform: rotate(14deg);
-            opacity: .18;
-            pointer-events: none;
+        .hero-inner {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 72px;
+            align-items: center;
+            max-width: 1080px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
         }
 
+        /* text side */
         .hero-eyebrow {
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 600;
-            letter-spacing: .22em;
+            letter-spacing: .2em;
             text-transform: uppercase;
             color: var(--red);
             border: 1px solid var(--red-dim);
             padding: 5px 14px;
-            margin-bottom: 52px;
-            position: relative;
-            z-index: 1;
+            margin-bottom: 40px;
             display: inline-block;
-        }
-
-        .hero-title-wrap {
-            position: relative;
-            z-index: 1;
         }
 
         .hero-word {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: clamp(88px, 20vw, 220px);
+            font-size: clamp(60px, 11vw, 124px);
             letter-spacing: .03em;
             line-height: .88;
             display: block;
@@ -102,85 +90,88 @@
         .hero-word-main  { color: var(--text); }
         .hero-word-ghost {
             color: transparent;
-            -webkit-text-stroke: 1.5px rgba(240,235,228,.14);
+            -webkit-text-stroke: 1.5px rgba(240,235,228,.18);
         }
 
         .hero-rule {
-            width: 120vw;
+            width: 100%;
             height: 2px;
             background: var(--red);
-            margin: 18px -10vw;
-            position: relative;
-            z-index: 1;
+            margin: 16px 0;
             transform: scaleX(0);
-            animation: expandRule .9s cubic-bezier(.22,1,.36,1) .2s forwards;
+            transform-origin: left;
+            animation: expandRule .8s cubic-bezier(.22,1,.36,1) .15s forwards;
         }
 
-        @keyframes expandRule {
-            to { transform: scaleX(1); }
-        }
+        @keyframes expandRule { to { transform: scaleX(1); } }
 
         .hero-sub {
             font-family: 'Lora', serif;
             font-style: italic;
-            font-size: clamp(15px, 2.2vw, 19px);
+            font-size: clamp(16px, 1.6vw, 18px);
             color: var(--mid);
-            line-height: 1.65;
-            margin-top: 36px;
-            max-width: 460px;
-            position: relative;
-            z-index: 1;
+            line-height: 1.7;
+            margin-top: 28px;
+            max-width: 420px;
         }
 
         .hero-actions {
             display: flex;
             gap: 14px;
-            margin-top: 44px;
-            justify-content: center;
+            margin-top: 36px;
             flex-wrap: wrap;
-            position: relative;
-            z-index: 1;
         }
 
         .btn {
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: 700;
-            letter-spacing: .18em;
+            letter-spacing: .16em;
             text-transform: uppercase;
             text-decoration: none;
-            padding: 14px 30px;
+            padding: 13px 28px;
             display: inline-flex;
             align-items: center;
             gap: 9px;
             transition: transform .15s, background .2s, border-color .2s, color .2s;
         }
-
         .btn:hover { transform: translateY(-2px); }
 
-        .btn-red {
-            background: var(--red);
-            color: #fff;
-            border: 2px solid var(--red);
-        }
+        .btn-red   { background: var(--red); color: #fff; border: 2px solid var(--red); }
         .btn-red:hover { background: #e00000; border-color: #e00000; }
 
-        .btn-ghost {
-            background: transparent;
-            color: var(--mid);
-            border: 1px solid var(--border);
-        }
+        .btn-ghost { background: transparent; color: var(--mid); border: 1px solid var(--border); }
         .btn-ghost:hover { border-color: var(--dim); color: var(--text); }
 
-        .hero-scroll-hint {
+        /* image side */
+        .hero-cover {
+            flex-shrink: 0;
+        }
+
+        .hero-cover img {
+            display: block;
+            width: 260px;
+            transform: rotate(2.5deg);
+            box-shadow:
+                -6px 6px 0 var(--red),
+                -12px 12px 40px rgba(0,0,0,.55);
+            transition: transform .3s ease;
+        }
+
+        .hero-cover img:hover {
+            transform: rotate(0deg) scale(1.02);
+        }
+
+        /* scroll hint */
+        .hero-scroll {
             position: absolute;
-            bottom: 36px;
+            bottom: 32px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             z-index: 1;
             animation: scrollBounce 2.4s ease-in-out infinite;
         }
@@ -192,65 +183,61 @@
 
         .scroll-line {
             width: 1px;
-            height: 44px;
+            height: 40px;
             background: linear-gradient(to bottom, var(--red), transparent);
         }
 
         .scroll-label {
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 9px;
-            letter-spacing: .22em;
+            font-size: 11px;
+            letter-spacing: .2em;
             text-transform: uppercase;
             color: var(--dim);
         }
 
-        /* ── SECTION BASE ─────────────────────────── */
+        /* ── SECTIONS ─────────────────────────── */
 
-        section { padding: 100px 24px; }
+        section { padding: 90px 40px; }
 
-        .inner {
-            max-width: 1080px;
-            margin: 0 auto;
-        }
+        .inner { max-width: 1080px; margin: 0 auto; }
 
-        .label {
+        .s-label {
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 10px;
+            font-size: 13px;
             font-weight: 700;
-            letter-spacing: .28em;
+            letter-spacing: .24em;
             text-transform: uppercase;
             color: var(--red);
             display: flex;
             align-items: center;
             gap: 14px;
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
-        .label::after {
+        .s-label::after {
             content: '';
-            width: 48px;
+            width: 44px;
             height: 1px;
             background: var(--red-dim);
         }
 
-        .heading {
+        .s-heading {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: clamp(44px, 8vw, 88px);
+            font-size: clamp(36px, 5.5vw, 60px);
             letter-spacing: .04em;
             line-height: .95;
-            margin-bottom: 56px;
+            margin-bottom: 48px;
         }
 
-        /* ── FEATURES ─────────────────────────────── */
+        /* ── FEATURES ─────────────────────────── */
 
         .features { background: var(--surface); position: relative; }
 
-        /* diagonal top cut */
         .features::before {
             content: '';
             position: absolute;
             top: 0; left: 0; right: 0;
-            height: 64px;
+            height: 56px;
             background: var(--bg);
             clip-path: polygon(0 0, 100% 0, 100% 0, 0 100%);
         }
@@ -265,7 +252,7 @@
 
         .card {
             background: var(--surface);
-            padding: 36px 32px;
+            padding: 32px;
             position: relative;
             transition: background .2s;
         }
@@ -274,24 +261,24 @@
 
         .card-num {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 10px;
-            letter-spacing: .18em;
+            font-size: 11px;
+            letter-spacing: .16em;
             color: var(--red-dim);
             position: absolute;
-            top: 18px;
-            right: 20px;
+            top: 16px;
+            right: 18px;
         }
 
         .card-icon {
-            font-size: 26px;
-            margin-bottom: 22px;
+            font-size: 24px;
+            margin-bottom: 18px;
             display: block;
             line-height: 1;
         }
 
         .card-name {
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             letter-spacing: .06em;
             text-transform: uppercase;
@@ -300,26 +287,25 @@
         }
 
         .card-desc {
-            font-size: 14px;
+            font-size: 15px;
             color: var(--mid);
-            line-height: 1.7;
+            line-height: 1.65;
         }
 
-        /* ── SETUP ────────────────────────────────── */
+        /* ── SETUP ────────────────────────────── */
 
         .setup { background: var(--bg); }
 
         .tabs {
             display: flex;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 0;
         }
 
         .tab-btn {
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 700;
-            letter-spacing: .16em;
+            letter-spacing: .14em;
             text-transform: uppercase;
             padding: 12px 22px;
             color: var(--dim);
@@ -339,14 +325,14 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-top: none;
-            padding: 36px;
+            padding: 32px 36px;
         }
         .tab-panel.on { display: block; }
 
         .code {
             font-family: 'Courier New', Courier, monospace;
             font-size: 13px;
-            line-height: 2.1;
+            line-height: 2.2;
         }
 
         .code .p { color: var(--red); user-select: none; margin-right: 10px; }
@@ -355,12 +341,12 @@
 
         .setup-note {
             font-style: italic;
-            font-size: 13px;
+            font-size: 14px;
             color: var(--dim);
-            margin-top: 22px;
+            margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid var(--border);
-            line-height: 1.6;
+            line-height: 1.65;
         }
 
         .setup-note code {
@@ -369,12 +355,12 @@
             color: var(--mid);
         }
 
-        /* ── FOOTER ───────────────────────────────── */
+        /* ── FOOTER ───────────────────────────── */
 
         footer {
             background: var(--surface);
             border-top: 1px solid var(--border);
-            padding: 36px 24px;
+            padding: 32px 40px;
         }
 
         .footer-inner {
@@ -389,16 +375,15 @@
 
         .footer-logo {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 18px;
+            font-size: 20px;
             letter-spacing: .1em;
         }
-
         .footer-logo em { color: var(--red); font-style: normal; }
 
         .footer-copy {
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 11px;
-            letter-spacing: .12em;
+            font-size: 13px;
+            letter-spacing: .1em;
             color: var(--dim);
         }
 
@@ -409,36 +394,52 @@
 
         .footer-links a {
             font-family: 'Barlow Condensed', sans-serif;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: 700;
-            letter-spacing: .16em;
+            letter-spacing: .14em;
             text-transform: uppercase;
             color: var(--dim);
             text-decoration: none;
             transition: color .2s;
         }
-
         .footer-links a:hover { color: var(--red); }
 
-        /* ── REVEAL ───────────────────────────────── */
+        /* ── REVEAL ───────────────────────────── */
 
         .reveal {
             opacity: 0;
-            transform: translateY(28px);
-            transition: opacity .65s ease, transform .65s ease;
+            transform: translateY(24px);
+            transition: opacity .6s ease, transform .6s ease;
         }
-
         .reveal.shown { opacity: 1; transform: none; }
-
         .reveal:nth-child(2) { transition-delay: .08s; }
         .reveal:nth-child(3) { transition-delay: .16s; }
         .reveal:nth-child(4) { transition-delay: .24s; }
         .reveal:nth-child(5) { transition-delay: .32s; }
         .reveal:nth-child(6) { transition-delay: .40s; }
 
-        /* ── RESPONSIVE ───────────────────────────── */
+        /* ── RESPONSIVE ───────────────────────── */
+
+        @media (max-width: 780px) {
+            .hero-inner {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .hero-cover {
+                order: -1;
+                display: flex;
+                justify-content: center;
+            }
+            .hero-cover img { width: 180px; }
+            .hero-eyebrow { display: inline-block; }
+            .hero-sub { margin-left: auto; margin-right: auto; }
+            .hero-actions { justify-content: center; }
+            .hero-rule { transform-origin: center; }
+        }
 
         @media (max-width: 600px) {
+            section { padding: 70px 24px; }
+            footer { padding: 28px 24px; }
             .footer-inner { flex-direction: column; text-align: center; }
             .tab-panel { padding: 24px 20px; }
             .code { font-size: 12px; }
@@ -449,30 +450,36 @@
 
 <!-- HERO -->
 <section class="hero">
-    <span class="hero-eyebrow">Self-hosted &nbsp;·&nbsp; Open Source &nbsp;·&nbsp; Vol. I</span>
+    <div class="hero-inner">
+        <div class="hero-text">
+            <span class="hero-eyebrow">Self-hosted &nbsp;·&nbsp; Open Source &nbsp;·&nbsp; Vol. I</span>
 
-    <div class="hero-title-wrap">
-        <span class="hero-word hero-word-main">DIABOLIK</span>
-        <div class="hero-rule"></div>
-        <span class="hero-word hero-word-ghost">ARCHIVE</span>
+            <div>
+                <span class="hero-word hero-word-main">DIABOLIK</span>
+                <div class="hero-rule"></div>
+                <span class="hero-word hero-word-ghost">ARCHIVE</span>
+            </div>
+
+            <p class="hero-sub">
+                Il tuo archivio personale degli albi <em>Diabolik Inedito</em>.<br>
+                Scraper automatico, webapp locale, Docker.
+            </p>
+
+            <div class="hero-actions">
+                <a href="https://github.com/abeggi/diabolik" class="btn btn-red">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    GitHub
+                </a>
+                <a href="#setup" class="btn btn-ghost">Installazione ↓</a>
+            </div>
+        </div>
+
+        <div class="hero-cover">
+            <img src="diabolik-cover.jpg" alt="Copertina Diabolik Inedito">
+        </div>
     </div>
 
-    <p class="hero-sub">
-        Il tuo archivio personale degli albi <em>Diabolik Inedito</em>.<br>
-        Scraper automatico, webapp locale, Docker.
-    </p>
-
-    <div class="hero-actions">
-        <a href="https://github.com/abeggi/diabolik" class="btn btn-red">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-            </svg>
-            GitHub
-        </a>
-        <a href="#setup" class="btn btn-ghost">Installazione ↓</a>
-    </div>
-
-    <div class="hero-scroll-hint" aria-hidden="true">
+    <div class="hero-scroll" aria-hidden="true">
         <div class="scroll-line"></div>
         <span class="scroll-label">scroll</span>
     </div>
@@ -481,8 +488,8 @@
 <!-- FEATURES -->
 <section class="features">
     <div class="inner">
-        <div class="label">Funzionalità</div>
-        <h2 class="heading">TUTTO QUELLO<br>CHE TI SERVE</h2>
+        <div class="s-label">Funzionalità</div>
+        <h2 class="s-heading">TUTTO QUELLO<br>CHE TI SERVE</h2>
 
         <div class="grid">
             <div class="card reveal">
@@ -528,8 +535,8 @@
 <!-- SETUP -->
 <section class="setup" id="setup">
     <div class="inner">
-        <div class="label">Installazione</div>
-        <h2 class="heading">AVVIO<br>RAPIDO</h2>
+        <div class="s-label">Installazione</div>
+        <h2 class="s-heading">AVVIO<br>RAPIDO</h2>
 
         <div class="tabs">
             <button class="tab-btn on" onclick="switchTab('docker')">Docker</button>
@@ -590,7 +597,7 @@
 
     var io = new IntersectionObserver(function(entries) {
         entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('shown'); });
-    }, { threshold: 0.12 });
+    }, { threshold: 0.1 });
 
     document.querySelectorAll('.reveal').forEach(function(el) { io.observe(el); });
 </script>

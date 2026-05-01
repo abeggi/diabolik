@@ -835,7 +835,7 @@
         </div>
         <div class="footer-bottom">
             <div class="footer-copy">
-                &copy; <span id="footer-year"></span> Andrea Beggi &nbsp;·&nbsp;
+                &copy; 2026 Andrea Beggi &nbsp;·&nbsp;
                 <a href="https://github.com/abeggi/diabolik/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">GPL-3.0 License</a>
             </div>
             <div class="footer-copy">Self-hosted &nbsp;·&nbsp; No cloud &nbsp;·&nbsp; I tuoi dati restano tuoi</div>
@@ -844,8 +844,6 @@
 </footer>
 
 <script>
-    document.getElementById('footer-year').textContent = new Date().getFullYear();
-
     function switchTab(name) {
         document.querySelectorAll('.tab-btn').forEach(function(btn, i) {
             btn.classList.toggle('on', (name === 'docker' && i === 0) || (name === 'python' && i === 1));

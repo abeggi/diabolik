@@ -80,17 +80,23 @@ Funzionalità:
 ## Docker
 
 ```bash
-# Build (dalla root del repo)
-docker build -t abeggi/diabolik-archive .
+# Pull dell'immagine
+docker pull abeggi/diabolik-archive:latest
 
-# Avvio
+# Avvio (dalla directory con docker-compose.yml)
 docker compose up -d
-
-# Push su Docker Hub
-docker push abeggi/diabolik-archive:latest
 ```
 
-Volumi montati: `diabolik.db` e `covers/` persistono sull'host.
+L'app parte vuota su `http://localhost:8080`. Usa **Impostazioni → Avvia refresh** per scaricare gli albi.
+DB e copertine persistono sul filesystem host tramite volumi.
+
+Aggiornamento app:
+
+```bash
+docker compose down
+docker pull abeggi/diabolik-archive:latest
+docker compose up -d
+```
 
 ## Servizio systemd
 

@@ -77,6 +77,21 @@ Funzionalità:
 - Tema chiaro/scuro
 - Impostazioni: statistiche, refresh albi
 
+## Docker
+
+```bash
+# Build (dalla root del repo)
+docker build -t abeggi/diabolik-archive .
+
+# Avvio
+docker compose up -d
+
+# Push su Docker Hub
+docker push abeggi/diabolik-archive:latest
+```
+
+Volumi montati: `diabolik.db` e `covers/` persistono sull'host.
+
 ## Servizio systemd
 
 ```bash

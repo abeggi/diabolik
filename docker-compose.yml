@@ -1,0 +1,10 @@
+services:
+  diabolik:
+    image: abeggi/diabolik-archive:latest
+    container_name: diabolik-archive
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./diabolik-archive/diabolik.db:/app/diabolik.db
+      - ./diabolik-archive/covers:/app/covers
+    restart: unless-stopped

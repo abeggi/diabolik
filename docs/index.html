@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabolik Archive — Archivio personale degli albi</title>
+    <meta name="description" content="Archivio locale self-hosted degli albi Diabolik Inedito. Scraper automatico, webapp, Docker.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg:       #090909;
+            --surface:  #111111;
+            --surface2: #1a1a1a;
+            --red:      #cc0000;
+            --red-dim:  #6a0006;
+            --text:     #f0ebe4;
+            --mid:      #9a9188;
+            --dim:      #5a5248;
+            --border:   #242018;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Lora', Georgia, serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ── HERO ─────────────────────────────────── */
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            padding: 80px 24px 120px;
+            text-align: center;
+        }
+
+        /* halftone dot field */
+        .hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(204,0,0,.14) 1px, transparent 1px);
+            background-size: 30px 30px;
+            pointer-events: none;
+        }
+
+        /* thin diagonal red slash */
+        .hero::after {
+            content: '';
+            position: absolute;
+            top: -20%;
+            right: 12%;
+            width: 2px;
+            height: 140%;
+            background: linear-gradient(to bottom, transparent, var(--red) 40%, var(--red) 60%, transparent);
+            transform: rotate(14deg);
+            opacity: .18;
+            pointer-events: none;
+        }
+
+        .hero-eyebrow {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--red);
+            border: 1px solid var(--red-dim);
+            padding: 5px 14px;
+            margin-bottom: 52px;
+            position: relative;
+            z-index: 1;
+            display: inline-block;
+        }
+
+        .hero-title-wrap {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-word {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(88px, 20vw, 220px);
+            letter-spacing: .03em;
+            line-height: .88;
+            display: block;
+        }
+
+        .hero-word-main  { color: var(--text); }
+        .hero-word-ghost {
+            color: transparent;
+            -webkit-text-stroke: 1.5px rgba(240,235,228,.14);
+        }
+
+        .hero-rule {
+            width: 120vw;
+            height: 2px;
+            background: var(--red);
+            margin: 18px -10vw;
+            position: relative;
+            z-index: 1;
+            transform: scaleX(0);
+            animation: expandRule .9s cubic-bezier(.22,1,.36,1) .2s forwards;
+        }
+
+        @keyframes expandRule {
+            to { transform: scaleX(1); }
+        }
+
+        .hero-sub {
+            font-family: 'Lora', serif;
+            font-style: italic;
+            font-size: clamp(15px, 2.2vw, 19px);
+            color: var(--mid);
+            line-height: 1.65;
+            margin-top: 36px;
+            max-width: 460px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 14px;
+            margin-top: 44px;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            text-decoration: none;
+            padding: 14px 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            transition: transform .15s, background .2s, border-color .2s, color .2s;
+        }
+
+        .btn:hover { transform: translateY(-2px); }
+
+        .btn-red {
+            background: var(--red);
+            color: #fff;
+            border: 2px solid var(--red);
+        }
+        .btn-red:hover { background: #e00000; border-color: #e00000; }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--mid);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover { border-color: var(--dim); color: var(--text); }
+
+        .hero-scroll-hint {
+            position: absolute;
+            bottom: 36px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;
+            animation: scrollBounce 2.4s ease-in-out infinite;
+        }
+
+        @keyframes scrollBounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50%       { transform: translateX(-50%) translateY(7px); }
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 44px;
+            background: linear-gradient(to bottom, var(--red), transparent);
+        }
+
+        .scroll-label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 9px;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--dim);
+        }
+
+        /* ── SECTION BASE ─────────────────────────── */
+
+        section { padding: 100px 24px; }
+
+        .inner {
+            max-width: 1080px;
+            margin: 0 auto;
+        }
+
+        .label {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+            color: var(--red);
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .label::after {
+            content: '';
+            width: 48px;
+            height: 1px;
+            background: var(--red-dim);
+        }
+
+        .heading {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(44px, 8vw, 88px);
+            letter-spacing: .04em;
+            line-height: .95;
+            margin-bottom: 56px;
+        }
+
+        /* ── FEATURES ─────────────────────────────── */
+
+        .features { background: var(--surface); position: relative; }
+
+        /* diagonal top cut */
+        .features::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 64px;
+            background: var(--bg);
+            clip-path: polygon(0 0, 100% 0, 100% 0, 0 100%);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+        }
+
+        .card {
+            background: var(--surface);
+            padding: 36px 32px;
+            position: relative;
+            transition: background .2s;
+        }
+
+        .card:hover { background: var(--surface2); }
+
+        .card-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 10px;
+            letter-spacing: .18em;
+            color: var(--red-dim);
+            position: absolute;
+            top: 18px;
+            right: 20px;
+        }
+
+        .card-icon {
+            font-size: 26px;
+            margin-bottom: 22px;
+            display: block;
+            line-height: 1;
+        }
+
+        .card-name {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .card-desc {
+            font-size: 14px;
+            color: var(--mid);
+            line-height: 1.7;
+        }
+
+        /* ── SETUP ────────────────────────────────── */
+
+        .setup { background: var(--bg); }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0;
+        }
+
+        .tab-btn {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            padding: 12px 22px;
+            color: var(--dim);
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: color .2s;
+        }
+
+        .tab-btn.on { color: var(--text); border-bottom-color: var(--red); }
+        .tab-btn:hover:not(.on) { color: var(--mid); }
+
+        .tab-panel {
+            display: none;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-top: none;
+            padding: 36px;
+        }
+        .tab-panel.on { display: block; }
+
+        .code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            line-height: 2.1;
+        }
+
+        .code .p { color: var(--red); user-select: none; margin-right: 10px; }
+        .code .c { color: var(--dim); }
+        .code .k { color: var(--text); }
+
+        .setup-note {
+            font-style: italic;
+            font-size: 13px;
+            color: var(--dim);
+            margin-top: 22px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            line-height: 1.6;
+        }
+
+        .setup-note code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            color: var(--mid);
+        }
+
+        /* ── FOOTER ───────────────────────────────── */
+
+        footer {
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            padding: 36px 24px;
+        }
+
+        .footer-inner {
+            max-width: 1080px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            letter-spacing: .1em;
+        }
+
+        .footer-logo em { color: var(--red); font-style: normal; }
+
+        .footer-copy {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 11px;
+            letter-spacing: .12em;
+            color: var(--dim);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 22px;
+        }
+
+        .footer-links a {
+            font-family: 'Barlow Condensed', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--dim);
+            text-decoration: none;
+            transition: color .2s;
+        }
+
+        .footer-links a:hover { color: var(--red); }
+
+        /* ── REVEAL ───────────────────────────────── */
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity .65s ease, transform .65s ease;
+        }
+
+        .reveal.shown { opacity: 1; transform: none; }
+
+        .reveal:nth-child(2) { transition-delay: .08s; }
+        .reveal:nth-child(3) { transition-delay: .16s; }
+        .reveal:nth-child(4) { transition-delay: .24s; }
+        .reveal:nth-child(5) { transition-delay: .32s; }
+        .reveal:nth-child(6) { transition-delay: .40s; }
+
+        /* ── RESPONSIVE ───────────────────────────── */
+
+        @media (max-width: 600px) {
+            .footer-inner { flex-direction: column; text-align: center; }
+            .tab-panel { padding: 24px 20px; }
+            .code { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+    <span class="hero-eyebrow">Self-hosted &nbsp;·&nbsp; Open Source &nbsp;·&nbsp; Vol. I</span>
+
+    <div class="hero-title-wrap">
+        <span class="hero-word hero-word-main">DIABOLIK</span>
+        <div class="hero-rule"></div>
+        <span class="hero-word hero-word-ghost">ARCHIVE</span>
+    </div>
+
+    <p class="hero-sub">
+        Il tuo archivio personale degli albi <em>Diabolik Inedito</em>.<br>
+        Scraper automatico, webapp locale, Docker.
+    </p>
+
+    <div class="hero-actions">
+        <a href="https://github.com/abeggi/diabolik" class="btn btn-red">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+            </svg>
+            GitHub
+        </a>
+        <a href="#setup" class="btn btn-ghost">Installazione ↓</a>
+    </div>
+
+    <div class="hero-scroll-hint" aria-hidden="true">
+        <div class="scroll-line"></div>
+        <span class="scroll-label">scroll</span>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features">
+    <div class="inner">
+        <div class="label">Funzionalità</div>
+        <h2 class="heading">TUTTO QUELLO<br>CHE TI SERVE</h2>
+
+        <div class="grid">
+            <div class="card reveal">
+                <span class="card-num">01</span>
+                <span class="card-icon">🔍</span>
+                <div class="card-name">Ricerca avanzata</div>
+                <p class="card-desc">Full-text su titolo, autore e sinossi. Filtri per anno, tag e preferiti. Risultati istantanei.</p>
+            </div>
+            <div class="card reveal">
+                <span class="card-num">02</span>
+                <span class="card-icon">★</span>
+                <div class="card-name">Preferiti</div>
+                <p class="card-desc">Segna gli albi preferiti con un click. Badge visivo in griglia e filtro dedicato.</p>
+            </div>
+            <div class="card reveal">
+                <span class="card-num">03</span>
+                <span class="card-icon">🏷</span>
+                <div class="card-name">Tag personali</div>
+                <p class="card-desc">Organizza la collezione con tag liberi. Autocompletamento e filtro rapido dalla home.</p>
+            </div>
+            <div class="card reveal">
+                <span class="card-num">04</span>
+                <span class="card-icon">📝</span>
+                <div class="card-name">Note</div>
+                <p class="card-desc">Note personali per ogni albo salvate in automatico. Non perdi mai un appunto.</p>
+            </div>
+            <div class="card reveal">
+                <span class="card-num">05</span>
+                <span class="card-icon">⚡</span>
+                <div class="card-name">Scraper automatico</div>
+                <p class="card-desc">Scarica metadati e copertine da diabolik.it. Riprende dall'ultimo albo processato, rate-limited.</p>
+            </div>
+            <div class="card reveal">
+                <span class="card-num">06</span>
+                <span class="card-icon">🐳</span>
+                <div class="card-name">Docker ready</div>
+                <p class="card-desc">Un <code style="font-size:12px;color:var(--mid)">docker compose up</code> e sei operativo. DB e copertine persistono sul filesystem host.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SETUP -->
+<section class="setup" id="setup">
+    <div class="inner">
+        <div class="label">Installazione</div>
+        <h2 class="heading">AVVIO<br>RAPIDO</h2>
+
+        <div class="tabs">
+            <button class="tab-btn on" onclick="switchTab('docker')">Docker</button>
+            <button class="tab-btn"    onclick="switchTab('python')">Python</button>
+        </div>
+
+        <div class="tab-panel on" id="tab-docker">
+            <div class="code">
+                <div><span class="p">#</span><span class="c">scarica ed avvia</span></div>
+                <div><span class="p">$</span><span class="k">docker compose up -d</span></div>
+                <div>&nbsp;</div>
+                <div><span class="p">#</span><span class="c">apri http://localhost:8080</span></div>
+                <div><span class="p">#</span><span class="c">Impostazioni → Avvia refresh per scaricare gli albi</span></div>
+            </div>
+            <p class="setup-note">
+                DB e copertine persistono tramite volumi Docker sul filesystem host.<br>
+                Aggiornamento: <code>docker pull abeggi/diabolik-archive:latest</code>
+            </p>
+        </div>
+
+        <div class="tab-panel" id="tab-python">
+            <div class="code">
+                <div><span class="p">$</span><span class="k">git clone https://github.com/abeggi/diabolik</span></div>
+                <div><span class="p">$</span><span class="k">cd diabolik</span></div>
+                <div><span class="p">$</span><span class="k">python3 -m venv .venv && .venv/bin/pip install -r requirements.txt</span></div>
+                <div>&nbsp;</div>
+                <div><span class="p">#</span><span class="c">avvia webapp</span></div>
+                <div><span class="p">$</span><span class="k">cd diabolik-archive/webapp && ../.venv/bin/python main.py</span></div>
+                <div>&nbsp;</div>
+                <div><span class="p">#</span><span class="c">scarica gli albi (separatamente)</span></div>
+                <div><span class="p">$</span><span class="k">cd diabolik-archive && ../.venv/bin/python scraper.py</span></div>
+            </div>
+            <p class="setup-note">Python 3.10+ richiesto.</p>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-logo"><em>DIABOLIK</em> ARCHIVE</div>
+        <div class="footer-copy">MIT License &nbsp;·&nbsp; Self-hosted</div>
+        <div class="footer-links">
+            <a href="https://github.com/abeggi/diabolik">GitHub ↗</a>
+            <a href="https://hub.docker.com/r/abeggi/diabolik-archive">Docker Hub ↗</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    function switchTab(name) {
+        document.querySelectorAll('.tab-btn').forEach(function(btn, i) {
+            btn.classList.toggle('on', (name === 'docker' && i === 0) || (name === 'python' && i === 1));
+        });
+        document.getElementById('tab-docker').classList.toggle('on', name === 'docker');
+        document.getElementById('tab-python').classList.toggle('on', name === 'python');
+    }
+
+    var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('shown'); });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(function(el) { io.observe(el); });
+</script>
+
+</body>
+</html>

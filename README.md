@@ -110,3 +110,18 @@ sudo ./service.sh start|stop|restart|status
 
 Tabelle: `albi` (metadati), `scrape_log` (storico), `user_data` (preferiti e note), `tags` e `albi_tags` (tag N:N).
 SQLite in `diabolik-archive/diabolik.db`.
+
+## Note legali
+
+Diabolik Archive è uno strumento personale per organizzare e consultare
+i metadati scaricati dal sito ufficiale diabolik.it. Non distribuisce,
+archivia né riproduce contenuti protetti da copyright.
+
+Tutti i personaggi, le storie, le immagini e i marchi Diabolik sono
+proprietà di Astorina Srl e/o Mondadori. Questo progetto non ha alcuna
+affiliazione con i titolari dei diritti e non è da loro approvato.
+
+Lo scraper accede esclusivamente a dati pubblicamente disponibili su
+diabolik.it. Ogni albo include un link diretto alla pagina originale
+sul sito ufficiale. Questo strumento è destinato esclusivamente a uso
+personale e non commerciale.
